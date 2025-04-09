@@ -1,63 +1,70 @@
 <script>
-  // --- 1) Define the pairs in the exact order you want them rotating:
-  let pairs = [
-    { navn: 'Vegar',      navnTo: 'Ragnar K' },
-    { navn: 'Asle',       navnTo: 'Fredrik' },
-    { navn: 'Simen',      navnTo: 'Håkon' },
-    { navn: 'Ingunn',     navnTo: 'Einar' },
-    { navn: 'Jørn Ivar',  navnTo: 'Lasse' },
-    { navn: 'Kristian B', navnTo: 'Niels' },
-    { navn: 'Kjetil',     navnTo: 'Tarjei' },
-    { navn: 'Øyvind',     navnTo: 'Eldar' },
-    { navn: 'Lars',       navnTo: 'Kristian E' },
-    { navn: 'Simeon',     navnTo: 'Eyerusalem' },
+  let pairs = [];
+  let displayRows = [];
 
-  ];
+  // --- Settings
+  const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLpWu6sI99utqsllpp-ZjsTvQ1Bww1PkEH-iDfzzXE5-v8qKx4QucxdbMWf0dsh9PFLnoEeSdfriED/pub?output=csv";
+  let startWeek = 2;
+  let step = 2;
+  let weeksToShow = 26;
 
-  // --- 2) Configuration variables:
-  let startWeek   = 2;   // The week number where your rotation officially begins
-  let step        = 2;    // Every 2 weeks, move to the next pair
-  let weeksToShow = 26;   // How many future entries to list in the table
+  // On component mount
+  onMount(async () => {
+    const res = await fetch(sheetUrl);
+    const csv = await res.text();
+    pairs = parseCSV(csv);
+    renderTable();
+  });
 
-  // --- 3) Calculate current calendar week:
+  import { onMount } from "svelte";
+
+  function parseCSV(csv) {
+    const lines = csv.trim().split("\n");
+    const headers = lines[0].split(",");
+    return lines.slice(1).map(line => {
+      const values = line.split(",");
+      let obj = {};
+      headers.forEach((h, i) => {
+        obj[h.trim()] = values[i]?.trim() ?? '';
+      });
+      return obj;
+    });
+  }
+
   function getCurrentWeek(date = new Date()) {
     const januaryFirst = new Date(date.getFullYear(), 0, 1);
     const daysSinceJan1 = Math.floor((date - januaryFirst) / (24 * 60 * 60 * 1000));
     return Math.ceil((daysSinceJan1 + januaryFirst.getDay() + 1) / 7);
   }
-  let currentWeek = getCurrentWeek();
 
-  // Use the larger of currentWeek and startWeek so that the table starts at week 14 if currentWeek < 14
-  const startingWeek = startWeek;
-
-  // --- 4) Helper to figure out which pair index for a given “week number”
   function getPairIndex(weekNumber) {
     let diff = weekNumber - startWeek;
     let stepCount = Math.floor(diff / step);
     let index = stepCount % pairs.length;
-    if (index < 0) {
-      index += pairs.length;
-    }
+    if (index < 0) index += pairs.length;
     return index;
   }
 
-  // --- 5) Build the table data for the upcoming rotations
-  let displayRows = [];
-  for (let i = 0; i < weeksToShow; i++) {
-    const weekNumber = startingWeek + (i * step);
-    // Wrap week number between 1 and 52
-    const wrappedWeek = ((weekNumber - 1) % 52) + 1;
-    const index      = getPairIndex(weekNumber);
+  function renderTable() {
+    const currentWeek = getCurrentWeek();
+    const startingWeek = startWeek;
+    displayRows = [];
 
-    displayRows.push({
-      uke:    wrappedWeek,
-      navn:   pairs[index].navn,
-      navnTo: pairs[index].navnTo
-    });
+    for (let i = 0; i < weeksToShow; i++) {
+      const weekNumber = startingWeek + (i * step);
+      const wrappedWeek = ((weekNumber - 1) % 52) + 1;
+      const index = getPairIndex(weekNumber);
+
+      displayRows.push({
+        uke: wrappedWeek,
+        navn: pairs[index].navn,
+        navnTo: pairs[index].navnTo
+      });
+    }
   }
 </script>
 
-<!-- --- 6) Display the table in Svelte --- -->
+<!-- UI -->
 <div class="container">
   <h2>Oversikt kjøkkenvakt {new Date().getFullYear()}</h2>
   <p>Oppgave: Sette på oppvaskmaskin og rydde på plass. Tørke over kjøkkenbenk.</p>
@@ -67,7 +74,7 @@
       <tr>
         <th>Uke</th>
         <th>Navn</th>
-        <th>Partner</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>

@@ -1,38 +1,47 @@
-# sv
+# 🧼 Kjøkkenvakt Rotasjon
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Dette prosjektet viser en roterende oversikt over hvem som har kjøkkenvakt i ulike uker. Rotasjonen foregår i par og endres annenhver uke.
 
-## Creating a project
+## 📋 Hva gjør den?
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Viser en tabell med uke for uke hvem som har kjøkkenvakt.
+- Rotasjonen starter i en gitt uke og går videre for hver `n` uke.
+- Listen er laget basert på et forhåndsdefinert sett med par.
 
-```bash
-# create a new project in the current directory
-npx sv create
+## ⚙️ Konfigurasjon
 
-# create a new project in my-app
-npx sv create my-app
+Du kan justere disse verdiene i JavaScript-koden:
+
+```js
+let startWeek   = 2;   // Uken rotasjonen starter
+let step        = 2;   // Hvor mange uker mellom hver ny rotasjon
+let weeksToShow = 26;  // Hvor mange uker frem i tid som vises
 ```
 
-## Developing
+## 👥 Par som roterer
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Parene defineres i rekkefølgen de skal vises:
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```js
+let pairs = [
+    { navn: 'Vegar',      navnTo: 'Ragnar K' },
+    { navn: 'Asle',       navnTo: 'Fredrik' },
+    { navn: 'Simen',      navnTo: 'Håkon' },
+    { navn: 'Ingunn',     navnTo: 'Einar' },
+    { navn: 'Jørn Ivar',  navnTo: 'Lasse' },
+    { navn: 'Kristian B', navnTo: 'Niels' },
+    { navn: 'Kjetil',     navnTo: 'Tarjei' },
+    { navn: 'Øyvind',     navnTo: 'Eldar' },
+    { navn: 'Lars',       navnTo: 'Kristian E' },
+    { navn: 'Simeon',     navnTo: 'Eyerusalem' },
+];
 ```
+## 🧽 Ansvarsoppgaver
+Sette på oppvaskmaskin og rydde på plass. Tørke over kjøkkenbenk.
 
-## Building
+## 🖥️ Teknisk
+Rotasjonen kalkuleres dynamisk basert på dagens uke.
 
-To create a production version of your app:
+Ukenumrene går i sirkel fra 1 til 52.
 
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Koden er skrevet for bruk i et Svelte-prosjekt, men logikken kan gjenbrukes andre steder.
