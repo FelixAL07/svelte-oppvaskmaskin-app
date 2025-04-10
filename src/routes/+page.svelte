@@ -1,73 +1,105 @@
-<script>
-  let pairs = [];
-  let displayRows = [];
-
-  // --- Settings
-  const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLpWu6sI99utqsllpp-ZjsTvQ1Bww1PkEH-iDfzzXE5-v8qKx4QucxdbMWf0dsh9PFLnoEeSdfriED/pub?output=csv";
-  let startWeek = 2;
-  let step = 2;
-  let weeksToShow = 26;
-
-  // On component mount
-  onMount(async () => {
-    const res = await fetch(sheetUrl);
-    const csv = await res.text();
-    pairs = parseCSV(csv);
-    renderTable();
-  });
-
+<script lang="js">
   import { onMount } from "svelte";
 
   function parseCSV(csv) {
-    const lines = csv.trim().split("\n");
-    const headers = lines[0].split(",");
-    return lines.slice(1).map(line => {
-      const values = line.split(",");
-      let obj = {};
-      headers.forEach((h, i) => {
-        obj[h.trim()] = values[i]?.trim() ?? '';
-      });
-      return obj;
+    console.log("parseCSV: Start parsing CSV");
+    const rows = csv.trim().split("\n");
+
+    const data = rows.slice(1).map((row, index) => {
+      console.log("parseCSV: Processing row", index + 1, ":", row);
+      const values = row.split(",").map((val) => val.trim());
+      let obj = {
+        name: values[0],
+        nameTo: values[1],
+      };
+      console.log("parseCSV: Parsed object", obj);
+      pairs.push(obj);
     });
+    console.log("parseCSV: Completed parsing CSV, total pairs:", pairs.length);
   }
 
-  function getCurrentWeek(date = new Date()) {
-    const januaryFirst = new Date(date.getFullYear(), 0, 1);
-    const daysSinceJan1 = Math.floor((date - januaryFirst) / (24 * 60 * 60 * 1000));
-    return Math.ceil((daysSinceJan1 + januaryFirst.getDay() + 1) / 7);
+  function getWeekNumber(d) {
+    // Copy date so don't modify original
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number
+    // Make Sunday's day number 7
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    // Get first day of year
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Calculate full weeks to nearest Thursday
+    var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+    // Return array of year and week number
+    return [weekNo];
   }
 
-  function getPairIndex(weekNumber) {
-    let diff = weekNumber - startWeek;
-    let stepCount = Math.floor(diff / step);
-    let index = stepCount % pairs.length;
-    if (index < 0) index += pairs.length;
-    return index;
-  }
+  function createDisplayrows(weeksToShow, currentWeek) {
+    // currentWeek[0] is the current calendar week
+    const currentWeekNum = currentWeek[0];
 
-  function renderTable() {
-    const currentWeek = getCurrentWeek();
-    const startingWeek = startWeek;
-    displayRows = [];
-
-    for (let i = 0; i < weeksToShow; i++) {
-      const weekNumber = startingWeek + (i * step);
-      const wrappedWeek = ((weekNumber - 1) % 52) + 1;
-      const index = getPairIndex(weekNumber);
-
-      displayRows.push({
-        uke: wrappedWeek,
-        navn: pairs[index].navn,
-        navnTo: pairs[index].navnTo
-      });
+    // Build the full schedule covering a full year (or enough weeks)
+    let fullSchedule = [];
+    for (let i = 0; i < 52; i++) {
+        let week = startWeek + i * step;
+        if (week > 52) week = week - 52; // wrap around into next year
+        fullSchedule.push(week);
     }
-  }
+    
+    // Adjust schedule numbers so that weeks wrapped into next year count as > 52
+    const adjustedSchedule = fullSchedule.map(w => w < startWeek ? w + 52 : w);
+    const adjustedCurrent = currentWeekNum < startWeek ? currentWeekNum + 52 : currentWeekNum;
+
+    // Filter scheduled weeks that occur after the current week
+    let filteredSchedule = [];
+    adjustedSchedule.forEach((adjWeek, index) => {
+        if (adjWeek > adjustedCurrent) {
+            filteredSchedule.push(fullSchedule[index]);
+        }
+    });
+    
+    // Slice to the desired number of weeks from the current week
+    filteredSchedule = filteredSchedule.slice(0, weeksToShow);
+    
+    // Build display rows by assigning pairs in a rotating fashion
+    displayRows = filteredSchedule.map((w, idx) => {
+        return { week: `Uke ${w}`, pair: pairs[idx % pairs.length] };
+    });
+    
+    console.log("displayRows", displayRows);
+}
+
+  let pairs = [];
+  let displayRows = [];
+  let weeks = [];
+
+  // --- Settings
+  const startWeek = 2;
+  const sheetUrl =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLpWu6sI99utqsllpp-ZjsTvQ1Bww1PkEH-iDfzzXE5-v8qKx4QucxdbMWf0dsh9PFLnoEeSdfriED/pub?output=csv";
+  let step = 2;
+  let weeksToShow = 10;
+
+  // --- Load CSV data on mount
+  onMount(async () => {
+    // fetch the CSV file
+    const res = await fetch(sheetUrl);
+
+    // convert to text
+    const csv = await res.text();
+
+    parseCSV(csv);
+    const currentWeek = getWeekNumber(new Date());
+
+    createDisplayrows(weeksToShow, currentWeek);
+  });
+  // --- Create display rows
 </script>
 
 <!-- UI -->
 <div class="container">
   <h2>Oversikt kjøkkenvakt {new Date().getFullYear()}</h2>
-  <p>Oppgave: Sette på oppvaskmaskin og rydde på plass. Tørke over kjøkkenbenk.</p>
+  <p>
+    Oppgave: Sette på oppvaskmaskin og rydde på plass. Tørke over kjøkkenbenk.
+  </p>
 
   <table>
     <thead>
@@ -80,11 +112,17 @@
     <tbody>
       {#each displayRows as row}
         <tr>
-          <td>{row.uke}</td>
-          <td>{row.navn}</td>
-          <td>{row.navnTo}</td>
+          <td>{row.week}</td>
+          <td>{row.pair?.name ?? "Ingen"}</td>
+          <td>{row.pair?.nameTo ?? ""}</td>
         </tr>
       {/each}
+      {#if displayRows.length === 0}
+    <tr>
+      <td colspan="3">Laster data...</td>
+    </tr>
+{/if}
+
     </tbody>
   </table>
 </div>
