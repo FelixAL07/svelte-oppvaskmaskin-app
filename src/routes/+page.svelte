@@ -2,22 +2,20 @@
   import { onMount } from "svelte";
 
   function parseCSV(csv) {
-    console.log("parseCSV: Start parsing CSV");
     const rows = csv.trim().split("\n");
 
     const data = rows.slice(1).map((row, index) => {
-      console.log("parseCSV: Processing row", index + 1, ":", row);
       const values = row.split(",").map((val) => val.trim());
       let obj = {
         name: values[0],
         nameTo: values[1],
       };
-      console.log("parseCSV: Parsed object", obj);
       pairs.push(obj);
     });
-    console.log("parseCSV: Completed parsing CSV, total pairs:", pairs.length);
   }
 
+
+  //Funksjon hentet fra netttet for å gi uke nummer
   function getWeekNumber(d) {
     // Copy date so don't modify original
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -32,6 +30,8 @@
     return [weekNo];
   }
 
+
+  // Function to create display rows based on the current week and schedule
   function createDisplayrows(weeksToShow, currentWeek) {
     // currentWeek[0] is the current calendar week
     const currentWeekNum = currentWeek[0];
@@ -76,7 +76,7 @@
   const sheetUrl =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLpWu6sI99utqsllpp-ZjsTvQ1Bww1PkEH-iDfzzXE5-v8qKx4QucxdbMWf0dsh9PFLnoEeSdfriED/pub?output=csv";
   let step = 2;
-  let weeksToShow = 10;
+  let weeksToShow = 14;
 
   // --- Load CSV data on mount
   onMount(async () => {
