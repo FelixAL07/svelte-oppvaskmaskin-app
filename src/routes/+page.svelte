@@ -3,13 +3,11 @@
   import { getWeekNumber, parseCSV, createDisplayrows } from "$lib/utils";
 
   // --- Variables --- \\
-  // This is where the data from the CSV will be stored
   let pairs = [];
   let displayRows = [];
-  let loading = true; // Add loading state
+  let loading = true;
 
   // --- Settings --- \\
-  // These settings are used to configure the display of the table
   const startWeek = 2;
   const sheetUrl =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLpWu6sI99utqsllpp-ZjsTvQ1Bww1PkEH-iDfzzXE5-v8qKx4QucxdbMWf0dsh9PFLnoEeSdfriED/pub?output=csv";
@@ -29,7 +27,7 @@
       step,
       pairs
     );
-    loading = false; //For skeleton loader
+    loading = false;
   });
 </script>
 
@@ -49,7 +47,6 @@
     </thead>
     <tbody>
       {#if loading}
-        <!-- Check if loading -->
         {#each Array(weeksToShow) as _, index}
           <tr>
             <td colspan="3"><span class="skeleton"></span></td>
@@ -97,7 +94,7 @@
   }
 
   th {
-    text-align: center; /* Center align header text */
+    text-align: center;
     font-size: 0.75rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -107,7 +104,7 @@
   td,
   th {
     padding: 1rem;
-    text-align: center; /* Center align cell content */
+    text-align: center;
   }
 
   td {
@@ -159,10 +156,10 @@
   footer {
     position: fixed;
     left: 50%;
-    
+
     transform: translateX(-50%);
     bottom: 0;
-    background: transparent; /* Transparent background */
+    background: transparent;
     text-align: center;
     padding: 1rem 0;
     margin-top: 2rem;
