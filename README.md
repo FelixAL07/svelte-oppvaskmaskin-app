@@ -53,3 +53,15 @@ Rotasjonen kalkuleres dynamisk basert på dagens uke.
 Ukenumrene går i sirkel fra 1 til 52.
 
 Koden er skrevet for bruk i et Svelte-prosjekt, men logikken kan gjenbrukes andre steder.
+
+## Plan for SMS integrering
+
+1. **SMS Tjeneste**
+  - Twilio
+
+2. **Backend endepunkt**
+  - POST-endpoint, som for eksempel `POST /send-sms`, som mottar data som telefonnummer og meldingstekst
+
+4. **Integrering med logikk**  
+ - Etter at rotasjonen er kalkulert og lister er generert, kall backend-endpointen for å sende SMS-varsler til de aktuelle brukerne. 
+
