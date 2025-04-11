@@ -158,13 +158,14 @@
 
   footer {
     position: fixed;
-    left: 0;
+    left: 50%;
+    
+    transform: translateX(-50%);
     bottom: 0;
     background: transparent; /* Transparent background */
     text-align: center;
     padding: 1rem 0;
     margin-top: 2rem;
     font-size: 0.875rem;
-    color: #4a5568;
-  }
+    color: #4a5568;  }
 </style>
