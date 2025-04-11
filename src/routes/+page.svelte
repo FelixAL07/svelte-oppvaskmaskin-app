@@ -52,7 +52,7 @@
       {#if loading} <!-- Check if loading -->
         {#each Array(weeksToShow) as _, index}
           <tr>
-            <td colspan="2"><span class="skeleton"></span></td>
+            <td colspan="3"><span class="skeleton"></span></td>
           </tr>
         {/each}
       {:else}

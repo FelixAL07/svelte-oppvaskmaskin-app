@@ -17,31 +17,21 @@ function parseCSV(csv) {
 // Function to create display rows based on weeksToShow from currentWeek
 function createDisplayrows(weeksToShow, currentWeek, startWeek, step, pairs) {
     const currentWeekNum = currentWeek[0];
-
-    let fullSchedule = [];
-    for (let i = 0; i < 52; i++) {
-        let week = startWeek + i * step;
-        if (week > 52) week = week - 52; // wrap around into next year
-        fullSchedule.push(week);
-    }
-    
-    const adjustedSchedule = fullSchedule.map(w => w < startWeek ? w + 52 : w);
     const adjustedCurrent = currentWeekNum < startWeek ? currentWeekNum + 52 : currentWeekNum;
-
-    let filteredSchedule = [];
-    adjustedSchedule.forEach((adjWeek, index) => {
-        if (adjWeek > adjustedCurrent) {
-            filteredSchedule.push(fullSchedule[index]);
-        }
+    
+    // Build the full schedule in one go
+    const fullSchedule = Array.from({ length: 52 }, (_, i) => {
+        let week = startWeek + i * step;
+        if (week > 52) week -= 52;
+        return week;
     });
     
-    // Get only the desired number of weeks from current week
-    filteredSchedule = filteredSchedule.slice(0, weeksToShow);
+    // Filter weeks that are after the current week using their adjusted value
+    const eligibleWeeks = fullSchedule.filter(w => (w < startWeek ? w + 52 : w) > adjustedCurrent);
     
-    const displayRows = filteredSchedule.map((w, idx) => {
-        return { week: `Uke ${w}`, pair: pairs[idx % pairs.length] };
-    });
-    return displayRows;
+    // Get only the desired number of weeks and assign pairs
+    return eligibleWeeks.slice(0, weeksToShow)
+        .map((w, idx) => ({ week: `Uke ${w}`, pair: pairs[idx % pairs.length] }));
 }
 
 export { getWeekNumber, parseCSV, createDisplayrows };
